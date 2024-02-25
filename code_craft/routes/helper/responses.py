@@ -6,20 +6,28 @@ from flask import Response
 
 @dataclass
 class ExecutionResult:
-    stdout: str
-    stderr: str
-    exit_code: int
+    stdout: str | None
+    stderr: str | None
+    exit_code: int | None
+    time_out: bool
 
     def to_flask_response(self) -> tuple[Response, int]:
+        success = not self.time_out
+        data = (
+            {
+                "stdout": self.stdout,
+                "stderr": self.stderr,
+                "exit_code": self.exit_code,
+            }
+            if not self.time_out
+            else None
+        )
         return (
             jsonify(
                 {
-                    "success": True,
-                    "data": {
-                        "stdout": self.stdout,
-                        "stderr": self.stderr,
-                        "exit_code": self.exit_code,
-                    },
+                    "success": success,
+                    "time_out": self.time_out,
+                    "data": data,
                 }
             ),
             200,

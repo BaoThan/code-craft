@@ -41,5 +41,5 @@ def execute() -> Response:
     # Execute the given block of code
     result = execute_code(Language(language_str), code)
     return ExecutionResult(
-        result.stdout, result.stderr, result.exit_code
+        result.stdout, result.stderr, result.exit_code, result.timeout
     ).to_flask_response()

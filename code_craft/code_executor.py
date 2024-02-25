@@ -6,6 +6,8 @@ import subprocess
 from dataclasses import dataclass
 from enum import Enum
 
+DEFAULT_TIMEOUT = 10
+
 
 class Language(Enum):
     """
@@ -51,9 +53,10 @@ class CodeExecutionResult:
     Represents a code execution result.
     """
 
-    stdout: str
-    stderr: str
-    exit_code: int
+    stdout: str | None
+    stderr: str | None
+    exit_code: int | None
+    timeout: bool = False
 
 
 def execute_code(language: Language, code: str) -> CodeExecutionResult:
@@ -68,8 +71,12 @@ def execute_code(language: Language, code: str) -> CodeExecutionResult:
 
     # Get the command to run the code based on given language
     run_cmd = __generate_run_command(language, dirpath, main_file)
-    result = subprocess.run(run_cmd, shell=True, capture_output=True, text=True)
-
+    try:
+        result = subprocess.run(
+            run_cmd, shell=True, capture_output=True, text=True, timeout=DEFAULT_TIMEOUT
+        )
+    except subprocess.TimeoutExpired:
+        return CodeExecutionResult(None, None, None, True)
     # Remove code temp directory
     shutil.rmtree(dirpath)
 
