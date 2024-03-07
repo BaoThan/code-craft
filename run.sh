@@ -1,3 +1,3 @@
-sudo docker pull ubuntu &&\
-    sudo docker build -t code-craft . &&\
-    sudo docker run -p 5000:5000 code-craft
+docker pull ubuntu &&\
+    docker build -t code-craft . &&\
+    docker run -p 5000:5000 --name code-craft code-craft

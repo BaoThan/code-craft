@@ -26,7 +26,7 @@ RUN apt install -y default-jdk
 # Javascript
 RUN apt-get install -y nodejs
 # Python3
-RUN apt-get install -y python3.9
+RUN apt-get install -y python3.10
 # Ruby
 RUN apt-get install -y ruby-full
 # PHP

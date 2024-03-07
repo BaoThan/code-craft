@@ -6,7 +6,7 @@ import subprocess
 from dataclasses import dataclass
 from enum import Enum
 
-DEFAULT_TIMEOUT = 10
+DEFAULT_TIMEOUT = 15
 
 
 class Language(Enum):
@@ -72,15 +72,23 @@ def execute_code(language: Language, code: str) -> CodeExecutionResult:
     # Get the command to run the code based on given language
     run_cmd = __generate_run_command(language, dirpath, main_file)
     try:
-        result = subprocess.run(
-            run_cmd, shell=True, capture_output=True, text=True, timeout=DEFAULT_TIMEOUT
+        process = subprocess.Popen(
+            "exec " + run_cmd,
+            shell=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True,
         )
+        stdout, stderr = process.communicate(timeout=DEFAULT_TIMEOUT)
     except subprocess.TimeoutExpired:
+        process.kill()
+        # Collect the child process exit status so the process does not become a zombie process
+        process.wait()
         return CodeExecutionResult(None, None, None, True)
     # Remove code temp directory
     shutil.rmtree(dirpath)
 
-    return CodeExecutionResult(result.stdout, result.stderr, result.returncode)
+    return CodeExecutionResult(stdout, stderr, process.returncode)
 
 
 def __generate_run_command(language: Language, dir: str, filename: str) -> list[str]:
