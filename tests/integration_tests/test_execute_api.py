@@ -8,9 +8,22 @@ API_URL = "http://127.0.0.1:5000/execute"
 
 
 def test_execute_api_working_cases() -> None:
-    for lang, code in [("python", PYTHON_HELLO_WORLD)]:
+    for lang, code in [
+        ("c", C_HELLO_WORLD),
+        ("cpp", CPP_HELLO_WORLD),
+        ("go", GO_HELLO_WORLD),
+        ("java", JAVA_HELLO_WORLD),
+        ("javascript", JAVASCRIPT_HELLO_WORLD),
+        ("perl", PERL_HELLO_WORLD),
+        ("php", PHP_HELLO_WORLD),
+        ("python", PYTHON_HELLO_WORLD),
+        ("ruby", RUBY_HELLO_WORLD),
+        ("rust", RUST_HELLO_WORLD),
+    ]:
+        print(f"Testing for {lang}")
         data = {"language": lang, "code": code}
         response = requests.post(API_URL, data=data)
+        print(response.json())
 
         assert response.status_code == 200
         assert response.json()["data"]["exit_code"] == 0
