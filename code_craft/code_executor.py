@@ -73,7 +73,7 @@ def execute_code(language: Language, code: str) -> CodeExecutionResult:
     run_cmd = __generate_run_command(language, dirpath, main_file)
     try:
         process = subprocess.Popen(
-            "exec " + run_cmd,
+            run_cmd,
             shell=True,
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
