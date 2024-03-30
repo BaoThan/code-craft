@@ -21,6 +21,19 @@ int main() {
 }
 """
 
+C_SHARP_HELLO_WORLD = """
+// Hello World! program
+namespace HelloWorld
+{
+    class Hello {
+        static void Main(string[] args)
+        {
+            System.Console.WriteLine("Hello, world!");
+        }
+    }
+}
+"""
+
 JAVA_HELLO_WORLD = """
 public class Main {
     public static void main(String[] args) {

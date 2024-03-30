@@ -70,25 +70,28 @@ def execute_code(language: Language, code: str) -> CodeExecutionResult:
     dirpath, main_file = __create_tempdir_and_paste_code(language, code)
 
     # Get the command to run the code based on given language
-    run_cmd = __generate_run_command(language, dirpath, main_file)
+    run_cmds = __generate_run_command(language, dirpath, main_file)
+    result = CodeExecutionResult(None, None, None, False)
     try:
-        process = subprocess.Popen(
-            run_cmd,
-            shell=True,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-            text=True,
-        )
-        stdout, stderr = process.communicate(timeout=DEFAULT_TIMEOUT)
+        for run_cmd in run_cmds:
+            process = subprocess.Popen(
+                run_cmd.split(),
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                text=True,
+            )
+            stdout, stderr = process.communicate(timeout=DEFAULT_TIMEOUT)
+            result = CodeExecutionResult(stdout, stderr, process.returncode)
     except subprocess.TimeoutExpired:
         process.kill()
         # Collect the child process exit status so the process does not become a zombie process
         process.wait()
-        return CodeExecutionResult(None, None, None, True)
+        result = CodeExecutionResult(None, None, None, True)
+
     # Remove code temp directory
     shutil.rmtree(dirpath)
 
-    return CodeExecutionResult(stdout, stderr, process.returncode)
+    return result
 
 
 def __generate_run_command(language: Language, dir: str, filename: str) -> list[str]:
@@ -98,17 +101,26 @@ def __generate_run_command(language: Language, dir: str, filename: str) -> list[
     file_name_no_ext = ".".join(filename.split(".")[:-1])
 
     return {
-        language.C: f"cd {dir} && gcc {filename} && ./a.out",
-        language.CPP: f"cd {dir} && g++ {filename} && ./a.out",
-        language.C_SHARP: f"cd {dir} && mcs {filename} && mono {file_name_no_ext}.exe",
-        language.JAVA: f"cd {dir} && javac {filename} && java {file_name_no_ext}",
-        language.JAVASCRIPT: f"node {dir}/{filename}",
-        language.PYTHON: f"python3 {dir}/{filename}",
-        language.RUBY: f"ruby {dir}/{filename}",
-        language.PERL: f"perl {dir}/{filename}",
-        language.PHP: f"php {dir}/{filename}",
-        language.GO: f"cd {dir} && go run {filename}",
-        language.RUST: f"cd {dir} && rustc {filename} && ./{file_name_no_ext}",
+        language.C: [f"gcc {dir}/{filename} -o {dir}/main", f"{dir}/main"],
+        language.CPP: [f"g++ {dir}/{filename} -o {dir}/main", f"{dir}/main"],
+        language.C_SHARP: [
+            f"mcs -out:{dir}/{file_name_no_ext}.exe {dir}/{filename}",
+            f"mono {dir}/{file_name_no_ext}.exe",
+        ],
+        language.JAVA: [
+            f"javac -d {dir} {dir}/{filename}",
+            f"java -cp {dir} {file_name_no_ext}",
+        ],
+        language.JAVASCRIPT: [f"node {dir}/{filename}"],
+        language.PYTHON: [f"python3 {dir}/{filename}"],
+        language.RUBY: [f"ruby {dir}/{filename}"],
+        language.PERL: [f"perl {dir}/{filename}"],
+        language.PHP: [f"php {dir}/{filename}"],
+        language.GO: [f"go run {dir}/{filename}"],
+        language.RUST: [
+            f"rustc -o {dir}/{file_name_no_ext} {dir}/{filename}",
+            f"{dir}/{file_name_no_ext}",
+        ],
     }[language]
 
 

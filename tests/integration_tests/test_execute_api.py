@@ -1,3 +1,4 @@
+import os
 import subprocess
 
 import requests
@@ -11,6 +12,7 @@ def test_execute_api_working_cases() -> None:
     for lang, code in [
         ("c", C_HELLO_WORLD),
         ("cpp", CPP_HELLO_WORLD),
+        ("csharp", C_SHARP_HELLO_WORLD),
         ("go", GO_HELLO_WORLD),
         ("java", JAVA_HELLO_WORLD),
         ("javascript", JAVASCRIPT_HELLO_WORLD),
@@ -20,15 +22,15 @@ def test_execute_api_working_cases() -> None:
         ("ruby", RUBY_HELLO_WORLD),
         ("rust", RUST_HELLO_WORLD),
     ]:
-        print(f"Testing for {lang}")
+        tmp_count_before = _count_temp_files()
         data = {"language": lang, "code": code}
         response = requests.post(API_URL, data=data)
-        print(response.json())
 
         assert response.status_code == 200
         assert response.json()["data"]["exit_code"] == 0
         assert response.json()["data"]["stderr"] == ""
         assert response.json()["data"]["stdout"] == "Hello, world!\n"
+        assert _count_temp_files() == tmp_count_before
 
 
 def test_execute_api_timeout_case() -> None:
@@ -41,6 +43,7 @@ def test_execute_api_timeout_case() -> None:
         return len(list(filter(None, ps_output.stdout.decode().split("\n"))))
 
     ps_count_prerun = count_processes()
+    tmp_count_before = _count_temp_files()
 
     data = {"language": "python", "code": "while True: pass"}
     response = requests.post(API_URL, data=data)
@@ -52,3 +55,8 @@ def test_execute_api_timeout_case() -> None:
     assert not response.json()["success"]
     assert response.json()["time_out"]
     assert ps_count_prerun == ps_count_postrun
+    assert _count_temp_files() == tmp_count_before
+
+
+def _count_temp_files() -> int:
+    return len(os.listdir("/tmp/code-craft/code"))
