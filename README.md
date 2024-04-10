@@ -24,7 +24,7 @@ POST `/execute`
 * __code__ (string): Your beautiful code 💫
 * __language__ (string): The language your code is written in. The supported languages are `c`, `cpp`, `csharp`, `go`, `java`, `javascript`, `perl`, `php`, `python`, `ruby`, `rust`.
 
-#### Response Format:
+##### Response Format:
 The API will return a JSON with the following fields:
 * __success__ (bool): Whether the input was received and executed.
 * __time_out__ (bool): Whether the code run time has exceeded 15 seconds. `success` field will be false if `time_out` is true.
@@ -48,6 +48,8 @@ print(response.json())
 # Output:
 # {'data': {'exit_code': 0, 'stderr': '', 'stdout': 'hello world\n'}, 'success': True, 'time_out': False}
 ```
+
+---
 
 ### Languages API
 GET `/languages`
