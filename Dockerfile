@@ -26,7 +26,7 @@ RUN apt install -y default-jdk
 # Javascript
 RUN apt-get install -y nodejs
 # Python3
-RUN apt-get install -y python3.10
+RUN apt-get install -y python3.10 python3-venv
 # Ruby
 RUN apt-get install -y ruby-full
 # PHP
@@ -38,6 +38,11 @@ RUN apt-get install -y rustc
 
 # Install pip package manager for python
 RUN apt-get install -y python3-pip
+
+# Create and activate a virtual environment
+RUN python3 -m venv /opt/venv
+ENV PATH="/opt/venv/bin:$PATH"
+
 # Install required python libraries
 RUN python3 -m pip install -r requirements.txt
 

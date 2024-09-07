@@ -73,15 +73,19 @@ def execute_code(language: Language, code: str) -> CodeExecutionResult:
     run_cmds = __generate_run_command(language, dirpath, main_file)
     result = CodeExecutionResult(None, None, None, False)
     try:
-        for run_cmd in run_cmds:
+        for i in range(len(run_cmds)):
             process = subprocess.Popen(
-                run_cmd.split(),
+                run_cmds[i].split(),
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
                 text=True,
             )
             stdout, stderr = process.communicate(timeout=DEFAULT_TIMEOUT)
             result = CodeExecutionResult(stdout, stderr, process.returncode)
+            # Catch compliation failed
+            if i == 0 and result.exit_code != 0:
+                return result
+
     except subprocess.TimeoutExpired:
         process.kill()
         # Collect the child process exit status so the process does not become a zombie process
